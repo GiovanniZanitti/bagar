@@ -1,0 +1,59 @@
+{
+    "categories": [
+      {
+        "name": "Fléchettes",
+        "image": "assets/png/darts.png",
+        "games": [
+            {
+                "name": "301",
+                "image": "assets/png/darts.png",
+                "goal": "Être le premier à réduire son score de 301 à exactement 0.",
+                "method": "Chaque joueur commence avec 301 points. À chaque tour, lancez trois fléchettes et soustrayez vos points marqués de votre score total.",
+                "turn": "Chaque joueur joue un tour en lançant trois fléchettes. Attention : pour terminer, il faut atteindre 0 en lançant une fléchette dans une zone 'double' du tableau."
+            },
+            {
+                "name": "401",
+                "image": "assets/png/darts.png",
+                "goal": "Être le premier à réduire son score de 401 à exactement 0.",
+                "method": "C'est similaire au 301, mais chaque joueur commence avec 401 points au lieu de 301. Lancez trois fléchettes par tour et soustrayez vos points marqués de votre score total.",
+                "turn": "Chaque joueur joue un tour en lançant trois fléchettes. Comme pour le 301, vous devez atteindre exactement 0 en terminant par une fléchette dans une zone 'double'."
+            },
+            {
+                "name": "501",
+                "image": "assets/png/darts.png",
+                "goal": "Réduire son score de 501 à exactement 0, avant les autres joueurs.",
+                "method": "Chaque joueur commence avec 501 points. Lancez trois fléchettes par tour et soustrayez vos points marqués. Faites attention à bien viser pour atteindre 0, car vous devez finir par une fléchette dans une zone 'double'.",
+                "turn": "Chaque joueur lance trois fléchettes par tour. Le jeu est plus long que le 301 ou le 401 car le score initial est plus élevé, mais les règles de fin restent les mêmes : il faut finir exactement à 0 avec un 'double'."
+            },
+            {
+                "name": "Killer",
+                "image": "assets/png/darts.png",
+                "goal": "Éliminer tous les autres joueurs en réduisant leurs vies à 0, tout en protégeant vos propres vies.",
+                "method": "Chaque joueur se voit attribuer un numéro de cible. Une fois que vous êtes devenu 'Killer' en touchant votre numéro trois fois, vous pouvez viser les numéros des autres joueurs pour les éliminer.",
+                "turn": "À chaque tour, les joueurs lancent trois fléchettes. Essayez de toucher votre propre numéro pour devenir 'Killer', puis visez les numéros des autres joueurs pour réduire leurs vies. Le dernier joueur restant gagne."
+            },
+            {
+                "name": "L'Horloge (Tour du Monde)",
+                "image": "assets/png/darts.png",
+                "goal": "Être le premier à toucher toutes les cibles dans l'ordre, de 1 à 20, puis le centre (bullseye).",
+                "method": "Les joueurs doivent toucher chaque numéro du tableau de manière séquentielle, en commençant par 1, puis 2, 3, et ainsi de suite jusqu'à 20, avant de terminer par le centre.",
+                "turn": "Chaque joueur lance trois fléchettes par tour. Si vous touchez votre numéro actuel, vous passez au suivant. Le premier joueur à atteindre le centre après avoir touché tous les numéros gagne."
+            }
+        ]
+      },
+      {
+        "name": "Cartes",
+        "image": "assets/png/cards.png",
+        "games": [
+          {
+            "name": "Poker",
+            "image": "assets/png/cards.png",
+            "goal": "Formez la meilleure combinaison de cartes pour gagner les mises.",
+            "method": "Utilisez vos cartes et celles sur la table pour faire une combinaison.",
+            "turn": "Chaque joueur mise, suit, ou se couche à son tour."
+          }
+        ]
+      }
+    ]
+  }
+  
