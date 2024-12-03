@@ -113,170 +113,229 @@ class _DartsScorePageState extends State<DartsScorePage> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            // Tableau des scores
+            // Partie supérieure : Liste des joueurs et détails du joueur actif
             Expanded(
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: DataTable(
-                  columns: const [
-                    DataColumn(label: Text('Joueur')),
-                    DataColumn(label: Text('1')),
-                    DataColumn(label: Text('2')),
-                    DataColumn(label: Text('3')),
-                    DataColumn(label: Text('Score du tour')),
-                    DataColumn(label: Text('Score total')),
-                  ],
-                  rows: List<DataRow>.generate(
-                    widget.players.length,
-                    (index) {
-                      final isCurrentPlayer = index == currentPlayer;
-
-                      return DataRow(
-                        cells: [
-                          DataCell(
-                            Row(
-                              children: [
-                                Text(widget.players[index].emoji,
-                                    style: const TextStyle(fontSize: 20)),
-                                const SizedBox(width: 8),
-                                Text(widget.players[index].name),
-                              ],
+              flex: 4, // Partie supérieure (60 % de l'écran)
+              child: Row(
+                children: [
+                  // Liste des joueurs
+                  Expanded(
+                    flex: 3,
+                    child: SizedBox(
+                      height: double.infinity,
+                      child: ListView.builder(
+                        itemCount: widget.players.length,
+                        itemBuilder: (context, index) {
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 4.0),
+                            child: ListTile(
+                              title: Text(
+                                widget.players[index].name,
+                                style: const TextStyle(fontSize: 14),
+                              ),
+                              subtitle: Text(
+                                'Score restant : ${playerScores[index]}',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: index == currentPlayer ? Colors.blue : Colors.black,
+                                  fontWeight: index == currentPlayer ? FontWeight.bold : FontWeight.normal,
+                                ),
+                              ),
+                              leading: Text(
+                                widget.players[index].emoji,
+                                style: const TextStyle(fontSize: 24),
+                              ),
                             ),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+
+                  // Détails du joueur actif
+                  Expanded(
+                    flex: 7,
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          // Nom du joueur actif
+                          Text(
+                            widget.players[currentPlayer].name,
+                            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                           ),
-                          DataCell(_editableThrowCell(0, isCurrentPlayer)),
-                          DataCell(_editableThrowCell(1, isCurrentPlayer)),
-                          DataCell(_editableThrowCell(2, isCurrentPlayer)),
-                          DataCell(Text(
-                            isCurrentPlayer
-                                ? '${currentThrowsPerPlayer[currentPlayer].where((score) => score != null).fold(0, (a, b) => a + (b ?? 0))}'
-                                : '-',
-                          )),
-                          DataCell(Text('${playerScores[index]}')),
+                          const SizedBox(height: 8),
+
+                          // Score total
+                          Text(
+                            'Score total : ${playerScores[currentPlayer]}',
+                            style: const TextStyle(fontSize: 20),
+                          ),
+                          const SizedBox(height: 16),
+
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // Première Row : Numéros des fléchettes
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                children: List.generate(3, (index) {
+                                  return Text(
+                                    'Fléchette ${index + 1}',
+                                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                                  );
+                                }),
+                              ),
+                              const SizedBox(height: 8), // Espacement entre les deux Row
+
+                              // Deuxième Row : Scores associés (modifiables)
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                children: List.generate(3, (index) {
+                                  final throwScore = currentThrowsPerPlayer[currentPlayer][index];
+                                  return GestureDetector(
+                                    onTap: () => _editThrowScore(index), // Appelle la fonction pour modifier le score
+                                    child: Text(
+                                      '${throwScore ?? '-'}',
+                                      style: const TextStyle(
+                                        fontSize: 18,
+                                        decoration: TextDecoration.underline, // Met en évidence que le texte est cliquable
+                                        color: Colors.blue, // Utilise une couleur différente pour les rendre identifiables
+                                      ),
+                                    ),
+                                  );
+                                }),
+                              ),
+                            ],
+                          ),
+
+
+
+                          // Score du tour
+                          Text(
+                            'Score du tour : ${currentThrowsPerPlayer[currentPlayer].where((score) => score != null).fold(0, (a, b) => a + (b ?? 0))}',
+                            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                          ),
                         ],
-                      );
-                    },
+                      ),
+                    ),
                   ),
-                )
+                ],
               ),
             ),
-            const SizedBox(height: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center, // Centre la ligne de boutons
-              children: ['Simple', 'Double', 'Triple'].map((label) {
-                return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8.0), // Espacement entre les boutons
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: activeMultiplier == label ? Colors.blue : Colors.grey, // Change la couleur du bouton actif
-                    ),
-                    onPressed: () {
-                      setState(() {
-                        activeMultiplier = label; // Met à jour le bouton actif
-                      });
-                    },
-                    child: Text(label),
-                  ),
-                );
-              }).toList(),
-            ),
-            const SizedBox(height: 20),
-            Row(
-              children: [
-                Expanded(
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 16), // Ajuste la hauteur du bouton
-                    ),
-                    onPressed: () {
-                      if (throwsLeft > 0) {
-                        _addThrowScore(25);
-                      }
-                    },
-                    child: const Text('25'),
-                  ),
-                ),
-                const SizedBox(width: 10), // Espace entre les boutons
-                Expanded(
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 16), // Ajuste la hauteur du bouton
-                    ),
-                    onPressed: () {
-                      if (throwsLeft > 0) {
-                        _addThrowScore(50);
-                      }
-                    },
-                    child: const Text('50'),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
 
-
-            // Boutons pour chaque score possible
+            const SizedBox(height: 20),
             Expanded(
-              child: GridView.builder(
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 5, // 5 boutons par ligne
-                  crossAxisSpacing: 10,
-                  mainAxisSpacing: 10,
-                ),
-                itemCount: 20, // Scores possibles (1 à 20, 25, 50)
-                itemBuilder: (context, index) {
-                  final baseScore =  index + 1;
-                  final score = (activeMultiplier == 'Simple')
-                      ? baseScore
-                      : (activeMultiplier == 'Double')
-                          ? baseScore * 2
-                          : baseScore * 3;
+              flex: 6,
+              child:Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: ['Simple', 'Double', 'Triple'].map((label) {
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: activeMultiplier == label ? Colors.blue : Colors.grey,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              activeMultiplier = label;
+                            });
+                          },
+                          child: Text(label),
+                        ),
+                      );
+                    }).toList(),
+                  ),
 
-                  return ElevatedButton(
+                  const SizedBox(height: 20),
+
+                  // Ligne des scores spéciaux (25, 50)
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                          ),
+                          onPressed: () {
+                            if (throwsLeft > 0) {
+                              _addThrowScore(25);
+                            }
+                          },
+                          child: const Text('25'),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                          ),
+                          onPressed: () {
+                            if (throwsLeft > 0) {
+                              _addThrowScore(50);
+                            }
+                          },
+                          child: const Text('50'),
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  // Grille des scores
+                  Expanded(
+                    child: GridView.builder(
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 5, // 5 boutons par ligne
+                        crossAxisSpacing: 10,
+                        mainAxisSpacing: 10,
+                      ),
+                      itemCount: 20,
+                      itemBuilder: (context, index) {
+                        final baseScore = index + 1;
+                        final score = (activeMultiplier == 'Simple')
+                            ? baseScore
+                            : (activeMultiplier == 'Double')
+                                ? baseScore * 2
+                                : baseScore * 3;
+
+                        return ElevatedButton(
+                          onPressed: () {
+                            if (throwsLeft > 0) {
+                              _addThrowScore(score);
+                            }
+                          },
+                          child: Text('$score'),
+                        );
+                      },
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  // Bouton Valider
+                  ElevatedButton(
                     onPressed: () {
-                      if (throwsLeft > 0) {
-                        _addThrowScore(score); // Ajoute le score modifié
+                      if (throwsLeft == 0) {
+                        _validateScore();
                       }
                     },
-                    child: Text('$score'),
-                  );
-                },
-              ),
-            ),
+                    child: const Text('Valider'),
+                  ),
 
-            const SizedBox(height: 20),
-
-            // Bouton Valider
-            ElevatedButton(
-              onPressed: () {
-                if (throwsLeft == 0) {
-                  _validateScore();
-                }
-              },
-              child: const Text('Valider'),
-            ),
+                ]
+              )
+            )
+            // Ligne de boutons (Simple, Double, Triple)
+            
           ],
         ),
       ),
     );
   }
-
-  Widget _editableThrowCell(int index, bool isCurrentPlayer) {
-    // Retourne un tiret pour les joueurs non actifs
-    if (!isCurrentPlayer) {
-      return const Text('-');
-    }
-
-    final score = currentThrowsPerPlayer[currentPlayer][index];
-    return GestureDetector(
-      onTap: () => _editThrowScore(index), // Permet d'éditer uniquement pour le joueur actif
-      child: Text(
-        score != null ? '$score' : '-',
-        style: TextStyle(
-          color: Colors.blue,
-          decoration: TextDecoration.underline,
-        ),
-      ),
-    );
-  }
-
 }
