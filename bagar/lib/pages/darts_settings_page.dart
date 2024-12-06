@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 import '../models/player_model.dart';
-import 'darts_score_page.dart'; // Classe Player (voir étape suivante)
+import 'darts_score_page.dart';
+import 'killer_score_page.dart'; // Classe Player (voir étape suivante)
 
 class DartsSettingsPage extends StatefulWidget {
-  final int initialScore;
+  final int? initialScore;
+  final String gameName;
 
   const DartsSettingsPage({
     super.key,
-    required this.initialScore,
+    this.initialScore,
+    required this.gameName,
   });
 
   @override
@@ -30,6 +33,27 @@ class _DartsSettingsPageState extends State<DartsSettingsPage> {
       setState(() {
         players.removeAt(index);
       });
+    }
+  }
+
+  void _startGame() {
+    if (widget.gameName == 'Killer') {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => KillerScorePage(players: players),
+        ),
+      );
+    } else {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => DartsScorePage(
+            players: players,
+            initialScore: widget.initialScore ?? 301,
+          ),
+        ),
+      );
     }
   }
 
@@ -91,16 +115,7 @@ class _DartsSettingsPageState extends State<DartsSettingsPage> {
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
-                
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => DartsScorePage(
-                      players: players, // Passe la liste des joueurs
-                      initialScore: widget.initialScore, // Exemple : Le score initial
-                    ),
-                  ),
-                );
+                _startGame();
               },
               child: const Text('Jouer'),
             ),

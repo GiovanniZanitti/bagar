@@ -53,22 +53,22 @@ class GameDetailsPage extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 20),
-              // Condition pour afficher le bouton
-              if (_isDartsGame(game.name))
+              // Bouton pour les jeux de type score (301, 401, 501)
+              if (_isGameScoreCounter())
                 ElevatedButton(
                   onPressed: () {
-                    final initialScore = _getInitialScore(game.name);
                     Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (context) => DartsSettingsPage(
-                          initialScore: initialScore,
+                          initialScore: game.initialScore,
+                          gameName: game.name,
                         ),
                       ),
                     );
                   },
                   child: const Text('Lancer une partie'),
-                )
+                ),
             ],
           ),
         ),
@@ -77,9 +77,7 @@ class GameDetailsPage extends StatelessWidget {
   }
 
   // Vérifie si le jeu est un jeu de fléchettes avec compteur de points
-  bool _isDartsGame(String gameName) {
-    return gameName == '301' || gameName == '401' || gameName == '501';
-  }
+
 
   // Retourne le score initial en fonction du jeu sélectionné
   int _getInitialScore(String gameName) {
@@ -94,4 +92,9 @@ class GameDetailsPage extends StatelessWidget {
         return 0; // Par défaut, pas de score initial
     }
   }
+
+  bool _isGameScoreCounter() {
+    return game.scoreCounter;
+  }
+
 }
