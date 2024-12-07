@@ -76,22 +76,6 @@ class GameDetailsPage extends StatelessWidget {
     );
   }
 
-  // Vérifie si le jeu est un jeu de fléchettes avec compteur de points
-
-
-  // Retourne le score initial en fonction du jeu sélectionné
-  int _getInitialScore(String gameName) {
-    switch (gameName) {
-      case '301':
-        return 301;
-      case '401':
-        return 401;
-      case '501':
-        return 501;
-      default:
-        return 0; // Par défaut, pas de score initial
-    }
-  }
 
   bool _isGameScoreCounter() {
     return game.scoreCounter;

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/player_model.dart';
 import 'darts_score_page.dart';
 import 'killer_score_page.dart'; // Classe Player (voir étape suivante)
+import 'yams_score_page.dart';
 
 class DartsSettingsPage extends StatefulWidget {
   final int? initialScore;
@@ -42,6 +43,13 @@ class _DartsSettingsPageState extends State<DartsSettingsPage> {
         context,
         MaterialPageRoute(
           builder: (context) => KillerScorePage(players: players),
+        ),
+      );
+    } else if (widget.gameName == 'Yams') {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => YamsScorePage(players: players),
         ),
       );
     } else {

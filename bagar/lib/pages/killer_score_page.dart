@@ -42,10 +42,7 @@ class _KillerScorePageState extends State<KillerScorePage> {
   late List<KillerPlayer> killerPlayers;
   bool isSelectingTargets = true;
   int _currentPlayerIndex = 0;
-  final Set<int> _playersInLastChance = {};
   late List<int> _lives;
-  late List<int> _killerHits;
-  late List<int> _selfHits;
   List<String> gameEvents = [];
 
   @override
@@ -55,8 +52,6 @@ class _KillerScorePageState extends State<KillerScorePage> {
         .map((player) => KillerPlayer(player: player))
         .toList();
     _lives = List.filled(widget.players.length, 3);
-    _killerHits = List.filled(widget.players.length, 0);
-    _selfHits = List.filled(widget.players.length, 0);
   }
 
 
@@ -102,13 +97,7 @@ class _KillerScorePageState extends State<KillerScorePage> {
     });
   }
 
-  bool _isPlayerEliminated(int playerIndex) {
-    return _lives[playerIndex] == 0 && !_isCurrentPlayer(playerIndex) && _playersInLastChance.contains(playerIndex);
-  }
 
-  bool _isCurrentPlayer(int playerIndex) {
-    return playerIndex == _currentPlayerIndex;
-  }
 
   bool _checkGameOver() {
     int playersAlive = 0;

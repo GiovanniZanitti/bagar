@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:confetti/confetti.dart';
 import '../models/player_model.dart';
 
-enum GameType { score, killer }
+enum GameType { score, killer, yams }
 
 class DartsResultPage extends StatefulWidget {
   final List<Player> players;
@@ -42,13 +42,6 @@ class _DartsResultPageState extends State<DartsResultPage> {
     super.dispose();
   }
 
-  String _getTrailingText(int index) {
-    if (widget.gameType == GameType.score) {
-      return '${widget.scores[index]} points';
-    } else {
-      return '${widget.killerHits![index]}  ${const Icon(Icons.gps_fixed, size: 16)} - ${widget.selfHits![index]} ${const Icon(Icons.favorite, size: 16)}';
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -86,9 +79,7 @@ class _DartsResultPageState extends State<DartsResultPage> {
                 ),
                 const SizedBox(height: 20),
                 Text(
-                  widget.gameType == GameType.score
-                      ? 'Tu es le grand gagnant ! 🎉'
-                      : 'Tu es le dernier survivant ! 💀',
+                  _getWinnerMessage(),
                   style: const TextStyle(
                     fontSize: 24,
                     color: Colors.orange,
@@ -100,51 +91,67 @@ class _DartsResultPageState extends State<DartsResultPage> {
                   child: ListView.builder(
                     itemCount: widget.players.length,
                     itemBuilder: (context, index) {
-                      final isWinner = index == widget.winner;
+                      // Trier les joueurs par score
+                      final sortedIndices = List.generate(widget.players.length, (i) => i)
+                        ..sort((a, b) => widget.scores[b].compareTo(widget.scores[a]));
+                      final currentIndex = sortedIndices[index];
+                      final isWinner = currentIndex == widget.winner;
+
                       return Card(
                         elevation: isWinner ? 8 : 2,
                         color: isWinner ? Colors.orange.shade100 : Colors.white,
                         child: ListTile(
                           leading: Text(
-                            widget.players[index].emoji,
+                            widget.players[currentIndex].emoji,
                             style: const TextStyle(fontSize: 24),
                           ),
                           title: Text(
-                            widget.players[index].name,
+                            widget.players[currentIndex].name,
                             style: TextStyle(
                               fontWeight: isWinner ? FontWeight.bold : FontWeight.normal,
                               color: isWinner ? Colors.purple : Colors.black,
                             ),
                           ),
-                          trailing: widget.gameType == GameType.score
-                              ? Text(
-                                  '${widget.scores[index]} points',
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              if (widget.gameType == GameType.yams) ...[
+                                Text(
+                                  '${widget.scores[currentIndex]} points',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: isWinner ? FontWeight.bold : FontWeight.normal,
+                                    color: isWinner ? Colors.purple : Colors.black,
+                                  ),
+                                ),
+                              ] else if (widget.gameType == GameType.killer) ...[
+                                Text(
+                                  '${widget.killerHits![currentIndex]}',
                                   style: TextStyle(
                                     fontSize: 18,
                                     color: isWinner ? Colors.purple : Colors.black,
                                   ),
-                                )
-                              : Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Text(
-                                      '${widget.killerHits![index]}',
-                                      style: TextStyle(
-                                        fontSize: 18,
-                                        color: isWinner ? Colors.purple : Colors.black,
-                                      ),
-                                    ),
-                                    Icon(Icons.gps_fixed, size: 16, color: isWinner ? Colors.purple : Colors.black),
-                                    Text(
-                                      ' - ${widget.selfHits![index]}',
-                                      style: TextStyle(
-                                        fontSize: 18,
-                                        color: isWinner ? Colors.purple : Colors.black,
-                                      ),
-                                    ),
-                                    Icon(Icons.favorite, size: 16, color: isWinner ? Colors.purple : Colors.black),
-                                  ],
                                 ),
+                                Icon(Icons.gps_fixed, size: 16, color: isWinner ? Colors.purple : Colors.black),
+                                Text(
+                                  ' - ${widget.selfHits![currentIndex]}',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    color: isWinner ? Colors.purple : Colors.black,
+                                  ),
+                                ),
+                                Icon(Icons.favorite, size: 16, color: isWinner ? Colors.purple : Colors.black),
+                              ] else ...[
+                                Text(
+                                  '${widget.scores[currentIndex]} points',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    color: isWinner ? Colors.purple : Colors.black,
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
                         ),
                       );
                     },
@@ -170,5 +177,18 @@ class _DartsResultPageState extends State<DartsResultPage> {
         ],
       ),
     );
+  }
+
+  String _getWinnerMessage() {
+    switch (widget.gameType) {
+      case GameType.score:
+        return 'Tu es le grand gagnant ! 🎉';
+      case GameType.killer:
+        return 'Tu es le dernier survivant ! 💀';
+      case GameType.yams:
+        return 'Tu as le meilleur score ! 🎲';
+      default:
+        return 'Félicitations ! 🎉';
+    }
   }
 } 

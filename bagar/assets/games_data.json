@@ -40,6 +40,20 @@
                 "scoreCounter": true
             }
         ]
+      },
+      {
+        "name": "Dés",
+        "image": "assets/png/dices.png",
+        "games": [
+            {
+                "name": "Yams",
+                "image": "assets/png/dices.png",
+                "goal": "Obtenir le plus de points possible en réalisant différentes combinaisons avec 5 dés.",
+                "method": "Chaque joueur dispose de 3 lancers par tour. À chaque lancer, il peut conserver les dés qui l'intéressent et relancer les autres. Il doit ensuite remplir une case de sa feuille de score avec la combinaison réalisée.",
+                "turn": "Lancez jusqu'à 3 fois les dés en gardant ceux qui vous intéressent. Choisissez ensuite une combinaison à remplir sur votre feuille de score (brelan, carré, full, petite suite, grande suite, yams...). Une fois toutes les cases remplies, le joueur avec le plus de points gagne.",
+                "scoreCounter": true
+            }
+        ]
       }
     ]
 }
