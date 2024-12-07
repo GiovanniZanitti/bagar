@@ -45,6 +45,7 @@ class _DartsScorePageState extends State<DartsScorePage> {
           players: widget.players,
           scores: playerScores,
           winner: firstFinisher!,
+          gameType: GameType.score,
         ),
       ),
     );

@@ -2,16 +2,24 @@ import 'package:flutter/material.dart';
 import 'package:confetti/confetti.dart';
 import '../models/player_model.dart';
 
+enum GameType { score, killer }
+
 class DartsResultPage extends StatefulWidget {
   final List<Player> players;
-  final List<int> scores;
+  final List<int> scores;  // Pour les jeux de score (301/401/501)
   final int winner;
+  final GameType gameType;
+  final List<int>? killerHits;    // Pour le Killer (nombre de kills)
+  final List<int>? selfHits;      // Pour le Killer (nombre de self-hits)
 
   const DartsResultPage({
     super.key,
     required this.players,
     required this.scores,
     required this.winner,
+    required this.gameType,
+    this.killerHits,
+    this.selfHits,
   });
 
   @override
@@ -32,6 +40,14 @@ class _DartsResultPageState extends State<DartsResultPage> {
   void dispose() {
     _confettiController.dispose();
     super.dispose();
+  }
+
+  String _getTrailingText(int index) {
+    if (widget.gameType == GameType.score) {
+      return '${widget.scores[index]} points';
+    } else {
+      return '${widget.killerHits![index]}  ${const Icon(Icons.gps_fixed, size: 16)} - ${widget.selfHits![index]} ${const Icon(Icons.favorite, size: 16)}';
+    }
   }
 
   @override
@@ -69,9 +85,11 @@ class _DartsResultPageState extends State<DartsResultPage> {
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 20),
-                const Text(
-                  'Tu es le grand gagnant ! 🎉',
-                  style: TextStyle(
+                Text(
+                  widget.gameType == GameType.score
+                      ? 'Tu es le grand gagnant ! 🎉'
+                      : 'Tu es le dernier survivant ! 💀',
+                  style: const TextStyle(
                     fontSize: 24,
                     color: Colors.orange,
                   ),
@@ -98,13 +116,35 @@ class _DartsResultPageState extends State<DartsResultPage> {
                               color: isWinner ? Colors.purple : Colors.black,
                             ),
                           ),
-                          trailing: Text(
-                            '${widget.scores[index]} points',
-                            style: TextStyle(
-                              fontSize: 18,
-                              color: isWinner ? Colors.purple : Colors.black,
-                            ),
-                          ),
+                          trailing: widget.gameType == GameType.score
+                              ? Text(
+                                  '${widget.scores[index]} points',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    color: isWinner ? Colors.purple : Colors.black,
+                                  ),
+                                )
+                              : Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      '${widget.killerHits![index]}',
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        color: isWinner ? Colors.purple : Colors.black,
+                                      ),
+                                    ),
+                                    Icon(Icons.gps_fixed, size: 16, color: isWinner ? Colors.purple : Colors.black),
+                                    Text(
+                                      ' - ${widget.selfHits![index]}',
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        color: isWinner ? Colors.purple : Colors.black,
+                                      ),
+                                    ),
+                                    Icon(Icons.favorite, size: 16, color: isWinner ? Colors.purple : Colors.black),
+                                  ],
+                                ),
                         ),
                       );
                     },

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/player_model.dart';
-
+import 'darts_result_page.dart';
 class KillerPlayer extends Player {
   int lives;
   int? targetNumber;
@@ -9,6 +9,8 @@ class KillerPlayer extends Player {
   static const int maxLives = 5;
   int selfHits = 0;    // Nouveau : nombre de fois où il s'est touché
   int otherHits = 0;   // Nouveau : nombre de fois où il a touché les autres
+  bool isEliminated = false;  // Nouvelle propriété
+  bool isInLastChance = false;  // Add this new property
 
   KillerPlayer({
     required Player player,
@@ -16,6 +18,8 @@ class KillerPlayer extends Player {
     this.targetNumber,
     this.isKiller = false,
     this.hasReachedMaxLives = false,
+    this.isEliminated = false,
+    this.isInLastChance = false,  // Add to constructor
   }) : super(
           name: player.name,
           emoji: player.emoji,
@@ -36,8 +40,13 @@ class KillerScorePage extends StatefulWidget {
 
 class _KillerScorePageState extends State<KillerScorePage> {
   late List<KillerPlayer> killerPlayers;
-  bool isSelectingTargets = true;  // Phase de sélection des numéros
-  int currentPlayer = 0;  // Index du joueur actuel
+  bool isSelectingTargets = true;
+  int _currentPlayerIndex = 0;
+  final Set<int> _playersInLastChance = {};
+  late List<int> _lives;
+  late List<int> _killerHits;
+  late List<int> _selfHits;
+  List<String> gameEvents = [];
 
   @override
   void initState() {
@@ -45,73 +54,101 @@ class _KillerScorePageState extends State<KillerScorePage> {
     killerPlayers = widget.players
         .map((player) => KillerPlayer(player: player))
         .toList();
+    _lives = List.filled(widget.players.length, 3);
+    _killerHits = List.filled(widget.players.length, 0);
+    _selfHits = List.filled(widget.players.length, 0);
   }
+
 
   void _nextTurn() {
     setState(() {
-      do {
-        if (currentPlayer < killerPlayers.length - 1) {
-          currentPlayer++;
+      final currentPlayer = killerPlayers[_currentPlayerIndex];
+      
+      if (currentPlayer.isInLastChance) {
+        if (currentPlayer.lives == 0) {
+          currentPlayer.isInLastChance = false;
+          currentPlayer.isEliminated = true;
+          _showGameEvent('${currentPlayer.name} est éliminé !');
         } else {
-          currentPlayer = 0;
-          if (isSelectingTargets) {
-            // Vérifier si tous les joueurs ont un numéro
-            if (killerPlayers.every((player) => player.targetNumber != null)) {
-              isSelectingTargets = false;
-            }
-          }
+          currentPlayer.isInLastChance = false;
+          _showGameEvent('${currentPlayer.name} s\'est sauvé !');
         }
-        // Continue à chercher le prochain joueur tant que le joueur actuel est éliminé
-        // et qu'il reste des joueurs en vie
-      } while (
-        killerPlayers[currentPlayer].lives == 0 && 
-        killerPlayers.any((player) => player.lives > 0)
-      );
+      }
 
-      // Vérifier s'il ne reste qu'un joueur en vie
-      if (killerPlayers.where((player) => player.lives > 0).length == 1) {
-        // Trouver le gagnant
-        final winner = killerPlayers.firstWhere((player) => player.lives > 0);
-        
-        // Afficher un dialogue de victoire
-        showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: const Text('Partie terminée !'),
-              content: Text('${winner.name} remporte la partie ! 🎉'),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop(); // Ferme le dialogue
-                    Navigator.of(context).pop(); // Retourne à la page précédente
-                  },
-                  child: const Text('OK'),
-                ),
-              ],
-            );
-          },
-        );
+      do {
+        _currentPlayerIndex = (_currentPlayerIndex + 1) % killerPlayers.length;
+      } while (killerPlayers[_currentPlayerIndex].isEliminated);
+
+      if (_checkGameOver()) {
+        _showWinnerDialog();
       }
     });
   }
 
   void _selectTargetNumber(int number) {
-    // Vérifie si le numéro est déjà pris
     if (killerPlayers.any((player) => player.targetNumber == number)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Ce numéro est déjà pris !'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      _showGameEvent('Ce numéro est déjà pris !');
       return;
     }
 
     setState(() {
-      killerPlayers[currentPlayer].targetNumber = number;
-      _nextTurn();
+      killerPlayers[_currentPlayerIndex].targetNumber = number;
+      
+      _currentPlayerIndex = (_currentPlayerIndex + 1) % widget.players.length;
+      
+      if (killerPlayers.every((player) => player.targetNumber != null)) {
+        isSelectingTargets = false;
+      }
+    });
+  }
+
+  bool _isPlayerEliminated(int playerIndex) {
+    return _lives[playerIndex] == 0 && !_isCurrentPlayer(playerIndex) && _playersInLastChance.contains(playerIndex);
+  }
+
+  bool _isCurrentPlayer(int playerIndex) {
+    return playerIndex == _currentPlayerIndex;
+  }
+
+  bool _checkGameOver() {
+    int playersAlive = 0;
+    for (KillerPlayer player in killerPlayers) {
+      if (!player.isEliminated) {
+        playersAlive++;
+      }
+    }
+    return playersAlive == 1;
+  }
+
+  void _showWinnerDialog() {
+    int winner = 0;
+    for (int i = 0; i < killerPlayers.length; i++) {
+      if (!killerPlayers[i].isEliminated) {
+        winner = i;
+        break;
+      }
+    }
+
+    List<int> killerHits = killerPlayers.map((p) => p.otherHits).toList();
+    List<int> selfHits = killerPlayers.map((p) => p.selfHits).toList();
+
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(
+        builder: (context) => DartsResultPage(
+          players: widget.players,
+          scores: _lives,
+          winner: winner,
+          gameType: GameType.killer,
+          killerHits: killerHits,
+          selfHits: selfHits,
+        ),
+      ),
+    );
+  }
+
+  void _showGameEvent(String message) {
+    setState(() {
+      gameEvents.add(message);
     });
   }
 
@@ -121,222 +158,276 @@ class _KillerScorePageState extends State<KillerScorePage> {
       appBar: AppBar(
         title: Text(isSelectingTargets 
           ? 'Choisissez vos numéros' 
-          : 'Killer - Tour de ${killerPlayers[currentPlayer].name}'),
+          : 'Killer - Tour de ${killerPlayers[_currentPlayerIndex].name}'),
       ),
       body: Column(
         children: [
-          // Liste des joueurs (toujours visible)
+          Container(
+            height: 150,
+            margin: const EdgeInsets.all(8),
+            child: Card(
+              color: Colors.blue.shade50,
+              child: gameEvents.isEmpty
+                  ? const Center(
+                      child: Text(
+                        'Les événements de la partie apparaîtront ici',
+                        style: TextStyle(
+                          color: Colors.grey,
+                          fontStyle: FontStyle.italic,
+                        ),
+                      ),
+                    )
+                  : ListView.builder(
+                      reverse: true,
+                      itemCount: gameEvents.length,
+                      itemBuilder: (context, index) {
+                        final event = gameEvents[gameEvents.length - 1 - index];
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 4,
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(
+                                Icons.event_note, 
+                                color: Colors.blue,
+                                size: 16,
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  event,
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+            ),
+          ),
+          
           Expanded(
-            flex: 2,  // Donne plus d'espace à la liste des joueurs
+            flex: 2,
             child: ListView.builder(
               itemCount: killerPlayers.length,
               itemBuilder: (context, index) {
                 final player = killerPlayers[index];
-                return Card(
-                  margin: const EdgeInsets.all(8),
-                  color: player.lives == 0 
-                      ? Colors.grey.shade200  // Gris clair pour les joueurs éliminés
-                      : index == currentPlayer && !isSelectingTargets
-                          ? Colors.blue.shade100
-                          : null,
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Row(
-                      children: [
-                        // Emoji du joueur (grisé si éliminé)
-                        Opacity(
-                          opacity: player.lives == 0 ? 0.5 : 1.0,
-                          child: Text(
-                            player.emoji,
-                            style: const TextStyle(fontSize: 32),
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        
-                        // Informations du joueur
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Text(
-                                    player.name,
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                      color: player.lives == 0 ? Colors.grey : Colors.black,
-                                      decoration: player.lives == 0 ? TextDecoration.lineThrough : null,
-                                    ),
-                                  ),
-                                  if (player.lives == 0)
-                                    const Text(
-                                      ' (Éliminé)',
-                                      style: TextStyle(
-                                        color: Colors.red,
-                                        fontStyle: FontStyle.italic,
-                                      ),
-                                    ),
-                                ],
+                final isCurrentPlayer = index == _currentPlayerIndex && !isSelectingTargets;
+                return Center(
+                  child: SizedBox(
+                    width: MediaQuery.of(context).size.width * (isCurrentPlayer ? 1.0 : 0.8),
+                    child: Card(
+                      margin: const EdgeInsets.all(8),
+                      color: player.lives == 0 
+                          ? Colors.grey.shade200
+                          : isCurrentPlayer
+                              ? Colors.blue.shade100
+                              : null,
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Row(
+                          children: [
+                            Opacity(
+                              opacity: player.lives == 0 ? 0.5 : 1.0,
+                              child: Text(
+                                player.emoji,
+                                style: const TextStyle(fontSize: 32),
                               ),
-                              const SizedBox(height: 8),
-                              Row(
+                            ),
+                            const SizedBox(width: 16),
+                            
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  // Numéro cible
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 8,
-                                      vertical: 4,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: player.lives == 0 
-                                          ? Colors.grey.shade300 
-                                          : Colors.blue.shade100,
-                                      borderRadius: BorderRadius.circular(4),
-                                    ),
-                                    child: Text(
-                                      'Numéro: ${player.targetNumber ?? "?"}',
-                                      style: TextStyle(
-                                        color: player.lives == 0 ? Colors.grey : Colors.black,
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  // Status Killer
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 8,
-                                      vertical: 4,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: player.lives == 0 
-                                          ? Colors.grey.shade300
-                                          : player.isKiller
-                                              ? Colors.red.shade100
-                                              : Colors.grey.shade200,
-                                      borderRadius: BorderRadius.circular(4),
-                                    ),
-                                    child: Text(
-                                      player.isKiller ? 'Killer' : 'Non Killer',
-                                      style: TextStyle(
-                                        color: player.lives == 0 ? Colors.grey : Colors.black,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              // Stats du joueur
-                              if (!isSelectingTargets) // On n'affiche les stats qu'une fois la partie commencée
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 8.0),
-                                  child: Row(
+                                  Row(
                                     children: [
-                                      Icon(
-                                        Icons.self_improvement,
-                                        size: 16,
-                                        color: player.lives == 0 ? Colors.grey : Colors.blue,
-                                      ),
                                       Text(
-                                        ' ${player.selfHits}',
+                                        player.name,
                                         style: TextStyle(
-                                          color: player.lives == 0 ? Colors.grey : Colors.blue,
-                                          fontSize: 12,
-                                        ),
-                                      ),
-                                      const SizedBox(width: 16),
-                                      Icon(
-                                        Icons.gps_fixed,
-                                        size: 16,
-                                        color: player.lives == 0 ? Colors.grey : Colors.red,
-                                      ),
-                                      Text(
-                                        ' ${player.otherHits}',
-                                        style: TextStyle(
-                                          color: player.lives == 0 ? Colors.grey : Colors.red,
-                                          fontSize: 12,
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                          color: player.lives == 0 ? Colors.grey : Colors.black,
+                                          decoration: player.isEliminated ? TextDecoration.lineThrough : null,
                                         ),
                                       ),
                                     ],
                                   ),
-                                ),
-                            ],
-                          ),
-                        ),
-                        
-                        // Vies restantes avec boutons + et -
-                        Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Row(
-                              children: List.generate(
-                                KillerPlayer.maxLives,
-                                (lifeIndex) => Icon(
-                                  Icons.favorite,
-                                  color: lifeIndex < player.lives
-                                      ? Colors.red
-                                      : Colors.grey.shade300,
-                                ),
+                                  const SizedBox(height: 4),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: player.isEliminated 
+                                          ? Colors.red.shade100
+                                          : player.isInLastChance 
+                                              ? Colors.orange.shade100
+                                              : Colors.green.shade100,
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    child: Text(
+                                      player.isEliminated
+                                          ? 'Éliminé'
+                                          : player.isInLastChance
+                                              ? 'Dernière chance !'
+                                              : 'En jeu',
+                                      style: TextStyle(
+                                        color: player.isEliminated
+                                            ? Colors.red
+                                            : player.isInLastChance
+                                                ? Colors.deepOrange
+                                                : Colors.green,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 8,
+                                          vertical: 4,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: player.lives == 0 
+                                              ? Colors.grey.shade300 
+                                              : Colors.blue.shade100,
+                                          borderRadius: BorderRadius.circular(4),
+                                        ),
+                                        child: Text(
+                                          'Numéro: ${player.targetNumber ?? "?"}',
+                                          style: TextStyle(
+                                            color: player.lives == 0 ? Colors.grey : Colors.black,
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 8,
+                                          vertical: 4,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: player.lives == 0 
+                                              ? Colors.grey.shade300
+                                              : player.isKiller
+                                                  ? Colors.red.shade100
+                                                  : Colors.grey.shade200,
+                                          borderRadius: BorderRadius.circular(4),
+                                        ),
+                                        child: Text(
+                                          player.isKiller ? 'Killer' : 'Non Killer',
+                                          style: TextStyle(
+                                            color: player.lives == 0 ? Colors.grey : Colors.black,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  if (!isSelectingTargets)
+                                    Padding(
+                                      padding: const EdgeInsets.only(top: 8.0),
+                                      child: Row(
+                                        children: [
+                                          Icon(
+                                            Icons.favorite,
+                                            size: 16,
+                                            color: player.lives == 0 ? Colors.grey : Colors.blue,
+                                          ),
+                                          Text(
+                                            ' ${player.selfHits}',
+                                            style: TextStyle(
+                                              color: player.lives == 0 ? Colors.grey : Colors.blue,
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 16),
+                                          Icon(
+                                            Icons.gps_fixed,
+                                            size: 16,
+                                            color: player.lives == 0 ? Colors.grey : Colors.red,
+                                          ),
+                                          Text(
+                                            ' ${player.otherHits}',
+                                            style: TextStyle(
+                                              color: player.lives == 0 ? Colors.grey : Colors.red,
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                ],
                               ),
                             ),
-                            const SizedBox(height: 8),
-                            Row(
-                              mainAxisSize: MainAxisSize.min,
+                            
+                            Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                // Bouton - : uniquement pour les Killers attaquant d'autres joueurs
-                                if (killerPlayers[currentPlayer].isKiller && index != currentPlayer)
-                                  IconButton(
-                                    icon: const Icon(Icons.remove_circle),
-                                    color: Colors.red,
-                                    onPressed: player.lives > 0
-                                        ? () {
-                                            setState(() {
-                                              player.lives--;
-                                              // Incrémente otherHits du Killer actuel
-                                              killerPlayers[currentPlayer].otherHits++;
-                                              if (player.lives == 0) {
-                                                ScaffoldMessenger.of(context).showSnackBar(
-                                                  SnackBar(
-                                                    content: Text('${player.name} est éliminé !'),
-                                                    backgroundColor: Colors.red,
-                                                  ),
-                                                );
-                                              }
-                                            });
-                                          }
-                                        : null,
+                                Row(
+                                  children: List.generate(
+                                    KillerPlayer.maxLives,
+                                    (lifeIndex) => Icon(
+                                      Icons.favorite,
+                                      color: lifeIndex < player.lives
+                                          ? Colors.red
+                                          : Colors.grey.shade300,
+                                    ),
                                   ),
-                                
-                                // Bouton + : uniquement pour le joueur actuel sur lui-même
-                                if (index == currentPlayer)
-                                  IconButton(
-                                    icon: const Icon(Icons.add_circle),
-                                    color: Colors.green,
-                                    onPressed: player.lives < KillerPlayer.maxLives
-                                        ? () {
-                                            setState(() {
-                                              player.lives++;
-                                              player.selfHits++;  // Incrémente selfHits
-                                              
-                                              if (player.lives == KillerPlayer.maxLives && !player.hasReachedMaxLives) {
-                                                player.hasReachedMaxLives = true;
-                                                player.isKiller = true;
-                                                ScaffoldMessenger.of(context).showSnackBar(
-                                                  SnackBar(
-                                                    content: Text('${player.name} devient Killer !'),
-                                                    backgroundColor: Colors.purple,
-                                                    duration: const Duration(seconds: 2),
-                                                  ),
-                                                );
+                                ),
+                                const SizedBox(height: 8),
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    if (killerPlayers[_currentPlayerIndex].isKiller && index != _currentPlayerIndex)
+                                      IconButton(
+                                        icon: const Icon(Icons.remove_circle),
+                                        color: Colors.red,
+                                        onPressed: player.lives > 0
+                                            ? () {
+                                                setState(() {
+                                                  player.lives--;
+                                                  killerPlayers[_currentPlayerIndex].otherHits++;
+                                                  if (player.lives == 0 && !player.isInLastChance) {
+                                                    player.isInLastChance = true;
+                                                    _showGameEvent('${player.name} a une dernière chance !');
+                                                  }
+                                                });
                                               }
-                                            });
-                                          }
-                                        : null,
-                                  ),
+                                            : null,
+                                      ),
+                                    
+                                    if (index == _currentPlayerIndex)
+                                      IconButton(
+                                        icon: const Icon(Icons.add_circle),
+                                        color: Colors.green,
+                                        onPressed: player.lives < KillerPlayer.maxLives
+                                            ? () {
+                                                setState(() {
+                                                  player.lives++;
+                                                  player.selfHits++;
+                                                  
+                                                  if (player.lives == KillerPlayer.maxLives && !player.hasReachedMaxLives) {
+                                                    player.hasReachedMaxLives = true;
+                                                    player.isKiller = true;
+                                                    _showGameEvent('${player.name} devient Killer !');
+                                                  }
+                                                });
+                                              }
+                                            : null,
+                                      ),
+                                  ],
+                                ),
                               ],
                             ),
                           ],
                         ),
-                      ],
+                      ),
                     ),
                   ),
                 );
@@ -344,21 +435,18 @@ class _KillerScorePageState extends State<KillerScorePage> {
             ),
           ),
 
-          // Grille de numéros (visible uniquement pendant la sélection)
           if (isSelectingTargets) ...[
-            // Texte d'instruction déplacé ici
             Container(
               padding: const EdgeInsets.symmetric(vertical: 8.0),
-              color: Colors.grey.shade100,  // Fond légèrement coloré pour le distinguer
+              color: Colors.grey.shade100,
               child: Text(
-                'Au tour de ${killerPlayers[currentPlayer].name} de choisir un numéro',
+                'Au tour de ${killerPlayers[_currentPlayerIndex].name} de choisir un numéro',
                 style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 textAlign: TextAlign.center,
               ),
             ),
-            // Clavier de numéros
             Container(
-              height: 200,  // Hauteur fixe pour le clavier
+              height: 200,
               padding: const EdgeInsets.all(8),
               child: GridView.builder(
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -387,7 +475,6 @@ class _KillerScorePageState extends State<KillerScorePage> {
             ),
           ],
 
-          // Bouton "Tour suivant" (visible uniquement après la phase de sélection)
           if (!isSelectingTargets)
             Padding(
               padding: const EdgeInsets.all(16.0),
