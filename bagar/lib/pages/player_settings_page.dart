@@ -8,11 +8,13 @@ import 'yams_score_page.dart';
 class PlayerSettingsPage extends StatefulWidget {
   final int? initialScore;
   final String gameName;
+  final String categoryName; 
 
   const PlayerSettingsPage({
     super.key,
     this.initialScore,
     required this.gameName,
+    required this.categoryName,
   });
 
   @override
@@ -59,7 +61,9 @@ class _PlayerSettingsPageState extends State<PlayerSettingsPage> {
         MaterialPageRoute(
           builder: (context) => DartsScorePage(
             players: players,
-            initialScore: widget.initialScore ?? 301,
+            initialScore: widget.initialScore ?? 501,
+            gameName: widget.gameName,
+            categoryName: widget.categoryName,
           ),
         ),
       );

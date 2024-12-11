@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/game_model.dart';
 import '../widgets/grid_item.dart';
 import '../widgets/gradient_background.dart';
+import '../utils/category_colors.dart';
 import 'game_details_page.dart';
 
 class GameGridPage extends StatelessWidget {
@@ -12,13 +13,19 @@ class GameGridPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final categoryColor = CategoryColors.getColor(categoryName);
+
     return GradientBackground(
       child: Scaffold(
         backgroundColor: Colors.transparent,
         appBar: AppBar(
           backgroundColor: Colors.transparent,
           elevation: 0,
-          title: Text(categoryName),
+          iconTheme: const IconThemeData(color: Colors.white),
+          title: Text(
+            categoryName,
+            style: const TextStyle(color: Colors.white),
+          ),
         ),
         body: GridView.builder(
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -33,12 +40,15 @@ class GameGridPage extends StatelessWidget {
             return GridItem(
               title: game.name,
               image: game.image,
-              primaryColor: Theme.of(context).primaryColor,
+              primaryColor: categoryColor,
               onTap: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => GameDetailsPage(game: game),
+                    builder: (context) => GameDetailsPage(
+                      game: game,
+                      categoryName: categoryName,
+                    ),
                   ),
                 );
               },

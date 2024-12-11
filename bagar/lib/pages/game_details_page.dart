@@ -1,13 +1,18 @@
 import 'package:flutter/material.dart'; 
 import '../models/game_model.dart';
 import 'player_settings_page.dart';
-import 'dart:math';
 import '../widgets/gradient_background.dart';
+import '../utils/category_colors.dart';
 
 class GameDetailsPage extends StatefulWidget {
   final Game game;
+  final String categoryName;
 
-  const GameDetailsPage({super.key, required this.game});
+  const GameDetailsPage({
+    super.key, 
+    required this.game,
+    required this.categoryName,
+  });
 
   @override
   State<GameDetailsPage> createState() => _GameDetailsPageState();
@@ -90,34 +95,22 @@ class _GameDetailsPageState extends State<GameDetailsPage> with TickerProviderSt
   }
 
   // Génère une couleur aléatoire de vert ou bleu
-  Color _generateRandomColor(bool isGreen) {
-    final random = Random();
-    if (isGreen) {
-      return Color.fromRGBO(
-        0,
-        150 + random.nextInt(106),  // Valeur de vert entre 150 et 255
-        100 + random.nextInt(50),   // Un peu de bleu pour plus de profondeur
-        1,
-      );
-    } else {
-      return Color.fromRGBO(
-        0,
-        100 + random.nextInt(50),   // Un peu de vert pour plus de profondeur
-        150 + random.nextInt(106),  // Valeur de bleu entre 150 et 255
-        1,
-      );
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
+    final categoryColor = CategoryColors.getColor(widget.categoryName);
+
     return GradientBackground(
       child: Scaffold(
         backgroundColor: Colors.transparent,
         appBar: AppBar(
-          title: Text(widget.game.name),
           backgroundColor: Colors.transparent,
           elevation: 0,
+          iconTheme: const IconThemeData(color: Colors.white),
+          title: Text(
+            widget.game.name,
+            style: const TextStyle(color: Colors.white),
+          ),
         ),
         body: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -127,7 +120,12 @@ class _GameDetailsPageState extends State<GameDetailsPage> with TickerProviderSt
               children: [
                 Container(
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.9),  // Fond légèrement transparent
+                    gradient: LinearGradient(
+                      colors: [
+                        categoryColor,
+                        categoryColor.withOpacity(0.7),
+                      ],
+                    ),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   padding: const EdgeInsets.all(16),
@@ -142,11 +140,21 @@ class _GameDetailsPageState extends State<GameDetailsPage> with TickerProviderSt
                             const Center(
                               child: Text(
                                 'But du jeu',
-                                style: TextStyle(fontSize: 12),
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.white70,
+                                ),
                               ),
                             ),
                             const SizedBox(height: 10),
-                            Text(widget.game.goal, style: const TextStyle(fontSize: 16), textAlign: TextAlign.justify),
+                            Text(
+                              widget.game.goal,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                color: Colors.white,
+                              ),
+                              textAlign: TextAlign.justify,
+                            ),
                           ],
                         ),
                       ),
@@ -159,13 +167,19 @@ class _GameDetailsPageState extends State<GameDetailsPage> with TickerProviderSt
                             const Center(
                               child: Text(
                                 'Moyen d\'y arriver',
-                                style: TextStyle(fontSize: 12),
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.white70,
+                                ),
                               ),
                             ),
                             const SizedBox(height: 10),
                             Text(
                               widget.game.method,
-                              style: const TextStyle(fontSize: 16),
+                              style: const TextStyle(
+                                fontSize: 16,
+                                color: Colors.white,
+                              ),
                               textAlign: TextAlign.justify,
                             ),
                           ],
@@ -180,11 +194,21 @@ class _GameDetailsPageState extends State<GameDetailsPage> with TickerProviderSt
                             const Center(
                               child: Text(
                                 'Déroulement d\'un tour',
-                                style: TextStyle(fontSize: 12),
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.white70,
+                                ),
                               ),
                             ),
                             const SizedBox(height: 10),
-                            Text(widget.game.turn, style: const TextStyle(fontSize: 16), textAlign: TextAlign.justify),
+                            Text(
+                              widget.game.turn,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                color: Colors.white,
+                              ),
+                              textAlign: TextAlign.justify,
+                            ),
                           ],
                         ),
                       ),
@@ -198,8 +222,9 @@ class _GameDetailsPageState extends State<GameDetailsPage> with TickerProviderSt
                     child: Center(
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white.withOpacity(0.9),
+                          backgroundColor: categoryColor,
                           padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                          elevation: 3,
                         ),
                         onPressed: () {
                           Navigator.push(
@@ -208,13 +233,18 @@ class _GameDetailsPageState extends State<GameDetailsPage> with TickerProviderSt
                               builder: (context) => PlayerSettingsPage(
                                 initialScore: widget.game.initialScore,
                                 gameName: widget.game.name,
+                                categoryName: widget.categoryName,
                               ),
                             ),
                           );
                         },
                         child: const Text(
                           'Lancer une partie',
-                          style: TextStyle(fontSize: 18),
+                          style: TextStyle(
+                            fontSize: 18,
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ),
