@@ -51,13 +51,15 @@ class PlayersRanking extends StatelessWidget {
   }
 
   Widget _buildPlayerCard(int index) {
+    final isCurrentPlayer = index == currentPlayer;
+    
     return Padding(
       padding: const EdgeInsets.only(right: 8.0),
       child: Card(
         elevation: 2,
-        color: index == currentPlayer 
-            ? primaryColor.withOpacity(0.1)
-            : Colors.white,
+        color: isCurrentPlayer 
+            ? primaryColor
+            : Colors.white.withOpacity(0.1),
         child: Container(
           width: 100,
           padding: const EdgeInsets.all(8.0),
@@ -73,10 +75,10 @@ class PlayersRanking extends StatelessWidget {
                 players[index].name,
                 style: TextStyle(
                   fontSize: 14,
-                  fontWeight: index == currentPlayer 
+                  fontWeight: isCurrentPlayer 
                       ? FontWeight.bold 
                       : FontWeight.normal,
-                  color: primaryColor,
+                  color: Colors.white
                 ),
                 textAlign: TextAlign.center,
                 overflow: TextOverflow.ellipsis,
@@ -86,10 +88,10 @@ class PlayersRanking extends StatelessWidget {
                 '${scores[index]}',
                 style: TextStyle(
                   fontSize: 16,
-                  fontWeight: index == currentPlayer 
+                  fontWeight: isCurrentPlayer 
                       ? FontWeight.bold 
                       : FontWeight.normal,
-                  color: primaryColor,
+                  color: Colors.white,
                 ),
               ),
             ],

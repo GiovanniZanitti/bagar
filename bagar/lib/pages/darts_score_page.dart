@@ -39,35 +39,71 @@ class _DartsScorePageState extends State<DartsScorePage> {
       players: widget.players,
       initialScore: widget.initialScore,
       context: context,
+      onStateChanged: () {
+        setState(() {});
+      },
     );
   }
 
-  Future<void> _handleThrowTap(int index, int currentScore) async {
-    final result = await showDialog<int>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(
-          'Score de la fléchette ${index + 1}',
-          style: TextStyle(color: CategoryColors.getColor(widget.categoryName)),
-        ),
-        content: TextField(
-          keyboardType: TextInputType.number,
-          decoration: InputDecoration(
-            hintText: 'Entrez le score',
-            focusedBorder: UnderlineInputBorder(
-              borderSide: BorderSide(color: CategoryColors.getColor(widget.categoryName)),
-            ),
-          ),
-          onSubmitted: (value) => Navigator.of(context).pop(int.tryParse(value)),
-        ),
-      ),
-    );
+  void _handleThrowTap(int throwIndex) {
+    final currentThrows = _gameController.currentThrowsPerPlayer[_gameController.currentPlayer];
+    final currentScore = currentThrows[throwIndex];
+    
+    if (currentScore == null) return;
 
-    if (result != null) {
-      setState(() {
-        _gameController.currentThrowsPerPlayer[_gameController.currentPlayer][index] = result;
-      });
-    }
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        int? newScore = currentScore;
+        
+        return AlertDialog(
+          title: const Text('Modifier le score'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(
+                  labelText: 'Nouveau score',
+                ),
+                onChanged: (value) {
+                  newScore = int.tryParse(value);
+                },
+                autofocus: true,
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Annuler'),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: CategoryColors.getColor(widget.categoryName),
+              ),
+              onPressed: () {
+                if (newScore != null) {
+                  setState(() {
+                    _gameController.updateThrowScore(throwIndex, newScore!);
+                  });
+                }
+                Navigator.of(context).pop();
+              },
+              child: const Text(
+                'Valider',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -95,7 +131,7 @@ class _DartsScorePageState extends State<DartsScorePage> {
                 score: _gameController.playerScores[_gameController.currentPlayer],
                 currentThrows: _gameController.currentThrowsPerPlayer[_gameController.currentPlayer],
                 primaryColor: categoryColor,
-                onThrowTap: _handleThrowTap,
+                onThrowTap: (index, score) => _handleThrowTap(index),
               ),
               const SizedBox(height: 20),
               PlayersRanking(

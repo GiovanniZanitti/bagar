@@ -28,21 +28,15 @@ class SpecialScoresRow extends StatelessWidget {
 
   Widget _buildSpecialButton(int score) {
     return Expanded(
-      child: Container(
-        decoration: DartsButtonStyle.getGradientDecoration(primaryColor),
-        child: ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-            padding: const EdgeInsets.symmetric(vertical: 12),
-          ),
-          onPressed: throwsLeft > 0 ? () => onScoreSelected(score) : null,
-          child: Text(
-            '$score',
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 16,
-            ),
+      child: ElevatedButton(
+        style: DartsButtonStyle.getButtonStyle(primaryColor),
+        onPressed: throwsLeft > 0 ? () => onScoreSelected(score) : null,
+        child: Text(
+          '$score',
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
           ),
         ),
       ),

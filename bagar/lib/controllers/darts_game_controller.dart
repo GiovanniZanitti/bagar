@@ -6,6 +6,7 @@ class DartsGameController {
   final List<Player> players;
   final int initialScore;
   final BuildContext context;
+  final VoidCallback onStateChanged;
   
   late List<int> playerScores;
   late List<List<int?>> currentThrowsPerPlayer;
@@ -21,6 +22,7 @@ class DartsGameController {
     required this.players,
     required this.initialScore,
     required this.context,
+    required this.onStateChanged,
   }) {
     _initialize();
   }
@@ -56,7 +58,23 @@ class DartsGameController {
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
+                // Restaurer le score du début du tour
+                playerScores[currentPlayer] = initialRoundScores[currentPlayer];
                 _resetCurrentPlayerTurn();
+                
+                // Si c'est le dernier tour, marquer le joueur comme ayant joué
+                if (isLastRound) {
+                  hasPlayedLastRound[currentPlayer] = true;
+                  // Vérifier si c'était le dernier joueur
+                  if (hasPlayedLastRound.every((played) => played)) {
+                    _showFinalScores();
+                    return;
+                  }
+                }
+                
+                // Passer au joueur suivant
+                _moveToNextPlayer();
+                onStateChanged();
               },
               child: const Text('OK'),
             ),
@@ -71,10 +89,17 @@ class DartsGameController {
     playerScores[currentPlayer] = 0;
 
     if (!isLastRound) {
-      _handleFirstFinisher();
+      firstFinisher = currentPlayer;
+      _startLastRound();
     } else {
-      _handleLastRoundFinish();
+      hasPlayedLastRound[currentPlayer] = true;
+      if (hasPlayedLastRound.every((played) => played)) {
+        _showFinalScores();
+      } else {
+        _moveToNextPlayer();
+      }
     }
+    onStateChanged();
   }
 
   void _handleFirstFinisher() {
@@ -130,20 +155,27 @@ class DartsGameController {
     } else {
       _moveToNextPlayer();
     }
+    onStateChanged();
   }
 
   void _handleLastRoundValidation() {
     hasPlayedLastRound[currentPlayer] = true;
+    
     if (hasPlayedLastRound.every((played) => played)) {
       _showFinalScores();
     } else {
-      currentPlayer = hasPlayedLastRound.indexWhere((played) => !played);
+      int nextPlayer = (currentPlayer + 1) % players.length;
+      while (hasPlayedLastRound[nextPlayer]) {
+        nextPlayer = (nextPlayer + 1) % players.length;
+      }
+      currentPlayer = nextPlayer;
       _resetCurrentPlayerTurn();
     }
   }
 
   void _moveToNextPlayer() {
     currentPlayer = (currentPlayer + 1) % players.length;
+    initialRoundScores[currentPlayer] = playerScores[currentPlayer];
     _resetCurrentPlayerTurn();
   }
 
@@ -154,31 +186,99 @@ class DartsGameController {
 
   void _startLastRound() {
     isLastRound = true;
-    hasPlayedLastRound = List.generate(players.length, (index) => index <= currentPlayer);
-    _moveToNextPlayer();
+    
+    // Initialiser tous les joueurs comme ayant déjà joué
+    hasPlayedLastRound = List.generate(players.length, (_) => true);
+    
+    // Donner un dernier tour uniquement aux joueurs qui suivent le firstFinisher
+    for (int i = currentPlayer + 1; i < players.length; i++) {
+      hasPlayedLastRound[i] = false;  // Ces joueurs n'ont pas encore joué leur dernier tour
+    }
+    
+    final remainingPlayers = players
+        .asMap()
+        .entries
+        .where((entry) => entry.key > currentPlayer)
+        .map((entry) => entry.value.name)
+        .join(', ');
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Dernier tour !'),
+          content: Text(
+            remainingPlayers.isNotEmpty
+                ? '${players[currentPlayer].name} est arrivé à 0 !\n\n'
+                  'Les joueurs suivants ont une dernière chance : $remainingPlayers'
+                : '${players[currentPlayer].name} est arrivé à 0 !\n\n'
+                  'Aucun autre joueur ne peut jouer dans ce tour.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                if (remainingPlayers.isNotEmpty) {
+                  _moveToNextPlayer();
+                } else {
+                  _showFinalScores();
+                }
+                onStateChanged();
+              },
+              child: const Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   void _showFinalScores() {
+    // Créer une liste de tuples (joueur, score, index) pour le tri
+    final playerScoresList = List.generate(
+      players.length,
+      (index) => (
+        player: players[index], 
+        score: playerScores[index],
+        originalIndex: index,
+      ),
+    );
+
+    // Trier la liste par score croissant
+    playerScoresList.sort((a, b) => a.score.compareTo(b.score));
+
+    // Créer les listes triées
+    final sortedPlayers = playerScoresList.map((e) => e.player).toList();
+    final sortedScores = playerScoresList.map((e) => e.score).toList();
+
+    // Trouver le nouvel index du gagnant dans la liste triée
+    final newWinnerIndex = playerScoresList.indexWhere((p) => p.originalIndex == firstFinisher);
+
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => ResultPage(
-          players: players,
-          scores: playerScores,
-          winner: firstFinisher!,
+          players: sortedPlayers,
+          scores: sortedScores,
+          winner: newWinnerIndex,  // Utilisation du nouvel index
           gameType: GameType.score,
         ),
       ),
     );
   }
 
-  void _handleLastRoundFinish() {
-    hasPlayedLastRound[currentPlayer] = true;
-    if (hasPlayedLastRound.every((played) => played)) {
-      _showFinalScores();
-    } else {
-      currentPlayer = hasPlayedLastRound.indexWhere((played) => !played);
-      _resetCurrentPlayerTurn();
+  void updateThrowScore(int throwIndex, int newScore) {
+    currentThrowsPerPlayer[currentPlayer][throwIndex] = newScore;
+    
+    // Recalculer le score total du joueur
+    playerScores[currentPlayer] = initialRoundScores[currentPlayer];
+    for (int i = 0; i <= throwIndex; i++) {
+      final score = currentThrowsPerPlayer[currentPlayer][i];
+      if (score != null) {
+        playerScores[currentPlayer] -= score;
+      }
     }
+    
+    onStateChanged();
   }
 } 

@@ -30,18 +30,18 @@ class PlayerDetailsCard extends StatelessWidget {
         children: [
           Text(
             player.name,
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
-              color: primaryColor,
+              color: Colors.white,
             ),
           ),
           const SizedBox(height: 8),
           Text(
             'Score total : $score',
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 20,
-              color: primaryColor,
+              color: Colors.white,
             ),
           ),
           const SizedBox(height: 16),
@@ -49,10 +49,10 @@ class PlayerDetailsCard extends StatelessWidget {
           const SizedBox(height: 16),
           Text(
             'Score du tour : ${_calculateRoundScore()}',
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: primaryColor,
+              color: Colors.white,
             ),
           ),
         ],
@@ -69,10 +69,10 @@ class PlayerDetailsCard extends StatelessWidget {
           children: List.generate(3, (index) {
             return Text(
               '${index + 1}',
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
-                color: primaryColor,
+                color: Colors.white,
               ),
             );
           }),
@@ -85,10 +85,10 @@ class PlayerDetailsCard extends StatelessWidget {
               onTap: () => onThrowTap(index, currentThrows[index] ?? 0),
               child: Text(
                 '${currentThrows[index] ?? '-'}',
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 18,
                   decoration: TextDecoration.underline,
-                  color: primaryColor,
+                  color: Colors.white,
                 ),
               ),
             );
@@ -101,4 +101,4 @@ class PlayerDetailsCard extends StatelessWidget {
   int _calculateRoundScore() {
     return currentThrows.where((score) => score != null).fold(0, (a, b) => a + (b ?? 0));
   }
-} 
+}

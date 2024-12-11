@@ -28,25 +28,18 @@ class ScoreGrid extends StatelessWidget {
         itemBuilder: (context, index) {
           final baseScore = index + 1;
           final score = _calculateScore(baseScore);
-          return _buildScoreButton(score);
+          return ElevatedButton(
+            style: DartsButtonStyle.getButtonStyle(primaryColor),
+            onPressed: throwsLeft > 0 ? () => onScoreSelected(score) : null,
+            child: Text(
+              '$score',
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          );
         },
-      ),
-    );
-  }
-
-  Widget _buildScoreButton(int score) {
-    return Container(
-      decoration: DartsButtonStyle.getGradientDecoration(primaryColor),
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-        ),
-        onPressed: throwsLeft > 0 ? () => onScoreSelected(score) : null,
-        child: Text(
-          '$score',
-          style: const TextStyle(color: Colors.white),
-        ),
       ),
     );
   }

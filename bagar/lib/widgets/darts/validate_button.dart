@@ -15,16 +15,12 @@ class ValidateButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: DartsButtonStyle.getGradientDecoration(primaryColor),
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-        ),
-        onPressed: isEnabled ? onValidate : null,
-        child: const Text(
+    return ElevatedButton(
+      style: DartsButtonStyle.getButtonStyle(primaryColor),
+      onPressed: isEnabled ? onValidate : null,
+      child: const Padding(
+        padding: EdgeInsets.symmetric(horizontal: 32),
+        child: Text(
           'Valider',
           style: TextStyle(
             color: Colors.white,
@@ -34,4 +30,4 @@ class ValidateButton extends StatelessWidget {
       ),
     );
   }
-} 
+}

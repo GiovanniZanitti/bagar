@@ -77,7 +77,7 @@ class _ResultPageState extends State<ResultPage> {
                     style: const TextStyle(
                       fontSize: 32,
                       fontWeight: FontWeight.bold,
-                      color: Colors.purple,
+                      color: Colors.white,
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -95,22 +95,17 @@ class _ResultPageState extends State<ResultPage> {
                     child: ListView.builder(
                       itemCount: widget.players.length,
                       itemBuilder: (context, index) {
-                        // Trier les joueurs par score
-                        final sortedIndices = List.generate(widget.players.length, (i) => i)
-                          ..sort((a, b) => widget.scores[b].compareTo(widget.scores[a]));
-                        final currentIndex = sortedIndices[index];
-                        final isWinner = currentIndex == widget.winner;
-
+                        final isWinner = widget.winner == index;
                         return Card(
                           elevation: isWinner ? 8 : 2,
                           color: isWinner ? Colors.orange.shade100 : Colors.white,
                           child: ListTile(
                             leading: Text(
-                              widget.players[currentIndex].emoji,
+                              widget.players[index].emoji,
                               style: const TextStyle(fontSize: 24),
                             ),
                             title: Text(
-                              widget.players[currentIndex].name,
+                              widget.players[index].name,
                               style: TextStyle(
                                 fontWeight: isWinner ? FontWeight.bold : FontWeight.normal,
                                 color: isWinner ? Colors.purple : Colors.black,
@@ -121,7 +116,7 @@ class _ResultPageState extends State<ResultPage> {
                               children: [
                                 if (widget.gameType == GameType.yams) ...[
                                   Text(
-                                    '${widget.scores[currentIndex]} points',
+                                    '${widget.scores[index]} points',
                                     style: TextStyle(
                                       fontSize: 18,
                                       fontWeight: isWinner ? FontWeight.bold : FontWeight.normal,
@@ -130,7 +125,7 @@ class _ResultPageState extends State<ResultPage> {
                                   ),
                                 ] else if (widget.gameType == GameType.killer) ...[
                                   Text(
-                                    '${widget.killerHits![currentIndex]}',
+                                    '${widget.killerHits![index]}',
                                     style: TextStyle(
                                       fontSize: 18,
                                       color: isWinner ? Colors.purple : Colors.black,
@@ -138,7 +133,7 @@ class _ResultPageState extends State<ResultPage> {
                                   ),
                                   Icon(Icons.gps_fixed, size: 16, color: isWinner ? Colors.purple : Colors.black),
                                   Text(
-                                    ' - ${widget.selfHits![currentIndex]}',
+                                    ' - ${widget.selfHits![index]}',
                                     style: TextStyle(
                                       fontSize: 18,
                                       color: isWinner ? Colors.purple : Colors.black,
@@ -147,7 +142,7 @@ class _ResultPageState extends State<ResultPage> {
                                   Icon(Icons.favorite, size: 16, color: isWinner ? Colors.purple : Colors.black),
                                 ] else ...[
                                   Text(
-                                    '${widget.scores[currentIndex]} points',
+                                    '${widget.scores[index]} points',
                                     style: TextStyle(
                                       fontSize: 18,
                                       color: isWinner ? Colors.purple : Colors.black,

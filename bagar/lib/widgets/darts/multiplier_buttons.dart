@@ -21,22 +21,14 @@ class MultiplierButtons extends StatelessWidget {
         final isActive = activeMultiplier == label;
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8.0),
-          child: Container(
-            decoration: isActive 
-                ? DartsButtonStyle.getGradientDecoration(primaryColor)
-                : BoxDecoration(
-                    color: Colors.grey,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.transparent,
-                elevation: 0,
-              ),
-              onPressed: () => onMultiplierChanged(label),
-              child: Text(
-                label,
-                style: const TextStyle(color: Colors.white),
+          child: ElevatedButton(
+            style: DartsButtonStyle.getButtonStyle(isActive ? primaryColor : Colors.grey),
+            onPressed: () => onMultiplierChanged(label),
+            child: Text(
+              label,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
               ),
             ),
           ),

@@ -4,7 +4,7 @@ import '../widgets/gradient_background.dart';
 import 'darts_score_page.dart';
 import 'killer_score_page.dart'; // Classe Player (voir étape suivante)
 import 'yams_score_page.dart';
-
+import '../utils/category_colors.dart';
 class PlayerSettingsPage extends StatefulWidget {
   final int? initialScore;
   final String gameName;
@@ -70,22 +70,69 @@ class _PlayerSettingsPageState extends State<PlayerSettingsPage> {
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return GradientBackground(
-      child: Scaffold(
+@override
+Widget build(BuildContext context) {
+  final categoryColor = CategoryColors.getColor(widget.categoryName);
+
+  return GradientBackground(
+    child: Scaffold(
+      backgroundColor: Colors.transparent,
+      appBar: AppBar(
         backgroundColor: Colors.transparent,
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          title: const Text('Paramètres des joueurs'),
-        ),
-        body: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            children: [
-              Expanded(
-                child: ListView.builder(
+        elevation: 0,
+        title: const Text('Paramètres des joueurs'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    categoryColor,
+                    categoryColor.withOpacity(0.7),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    widget.categoryName,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    widget.gameName,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    '${players.length} joueur${players.length > 1 ? 's' : ''}',
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.9),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+            Expanded(
+              child: ListView.builder(
                   itemCount: players.length,
                   itemBuilder: (context, index) {
                     return ListTile(

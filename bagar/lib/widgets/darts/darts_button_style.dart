@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
 
 class DartsButtonStyle {
-  static Decoration getGradientDecoration(Color primaryColor) {
-    return BoxDecoration(
-      gradient: LinearGradient(
-        colors: [
-          primaryColor,
-          primaryColor.withOpacity(0.7),
-        ],
+  static ButtonStyle getButtonStyle(Color primaryColor) {
+    return ElevatedButton.styleFrom(
+      backgroundColor: primaryColor,
+      elevation: 3,
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(4),
       ),
-      borderRadius: BorderRadius.circular(8),
     );
   }
 } 
