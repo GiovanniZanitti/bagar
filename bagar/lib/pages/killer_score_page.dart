@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/player_model.dart';
-import 'darts_result_page.dart';
+import 'result_page.dart';
 class KillerPlayer extends Player {
   int lives;
   int? targetNumber;
@@ -123,7 +123,7 @@ class _KillerScorePageState extends State<KillerScorePage> {
 
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(
-        builder: (context) => DartsResultPage(
+        builder: (context) => ResultPage(
           players: widget.players,
           scores: _lives,
           winner: winner,

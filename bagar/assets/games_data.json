@@ -54,6 +54,66 @@
                 "scoreCounter": true
             }
         ]
+      },
+      {
+        "name": "Cartes",
+        "image": "assets/png/cards.png", 
+        "games": [
+            {
+                "name": "Bataille",
+                "image": "assets/png/cards.png",
+                "goal": "Gagner toutes les cartes du jeu.",
+                "method": "Le jeu de cartes est divisé équitablement entre les joueurs. À chaque tour, chaque joueur retourne une carte face visible. Le joueur avec la carte la plus forte remporte toutes les cartes du tour.",
+                "turn": "Chaque joueur retourne une carte simultanément. En cas d'égalité, c'est la 'bataille' : les joueurs posent 3 cartes face cachée puis une carte face visible, le plus fort remporte tout le tas.",
+                "scoreCounter": false
+            },
+            {
+                "name": "Président",
+                "image": "assets/png/cards.png",
+                "goal": "Se débarrasser de toutes ses cartes en premier pour devenir le Président.",
+                "method": "Les cartes sont distribuées équitablement entre les joueurs. Le premier joueur pose une ou plusieurs cartes de même valeur. Les joueurs suivants doivent poser le même nombre de cartes de valeur supérieure ou passer.",
+                "turn": "Posez une ou plusieurs cartes identiques. Le tour continue jusqu'à ce que tous les joueurs passent. Le dernier à avoir posé commence le tour suivant. Le premier à finir ses cartes devient Président, le dernier devient Trou-du-cul.",
+                "scoreCounter": false
+            },
+            {
+                "name": "Uno",
+                "image": "assets/png/cards.png",
+                "goal": "Être le premier à se débarrasser de toutes ses cartes.",
+                "method": "Chaque joueur reçoit 7 cartes. Les joueurs doivent poser une carte de même couleur ou de même chiffre que celle du dessus de la pile. Les cartes spéciales (+2, +4, changement de sens, etc.) ajoutent de la stratégie.",
+                "turn": "Posez une carte correspondant à celle du dessus par sa couleur ou son chiffre. Si vous ne pouvez pas jouer, piochez une carte. N'oubliez pas de dire 'UNO!' quand il ne vous reste qu'une carte.",
+                "scoreCounter": false
+            }
+        ]
+      },
+      {
+        "name": "Jeux oraux",
+        "image": "assets/png/speaking.png",
+        "games": [
+            {
+                "name": "21",
+                "image": "assets/png/speaking.png", 
+                "goal": "Éviter de dire le nombre 21.",
+                "method": "Les joueurs comptent à tour de rôle en ajoutant 1, 2 ou 3 au nombre précédent. Le joueur qui doit dire 21 a perdu.",
+                "turn": "Choisissez d'ajouter 1, 2 ou 3 au nombre précédent. Par exemple, si le joueur précédent a dit '15', vous pouvez dire '16', '17' ou '18'. Stratégie : essayez de faire dire 21 à votre adversaire en contrôlant les nombres clés (17, 18, 19, 20).",
+                "scoreCounter": false
+            },
+            {
+                "name": "Je te donne un qui",
+                "image": "assets/png/speaking.png",
+                "goal": "Faire rire les autres joueurs avec des devinettes absurdes.",
+                "method": "Un joueur pose une devinette commençant par 'Je te donne un qui...' et donne des indices loufoques. Les autres joueurs doivent deviner la réponse, souvent basée sur un jeu de mots.",
+                "turn": "Posez votre devinette en commençant par 'Je te donne un qui...' et donnez des indices. Par exemple : 'Je te donne un qui est petit et qui fait peur aux éléphants ? Une souris.' Les autres joueurs tentent de deviner la réponse.",
+                "scoreCounter": false
+            },
+            {
+                "name": "Ni oui ni non",
+                "image": "assets/png/speaking.png",
+                "goal": "Tenir une conversation sans dire 'oui' ni 'non'.",
+                "method": "Les joueurs se posent des questions à tour de rôle. Il faut répondre sans jamais utiliser les mots 'oui' et 'non'. Le premier qui en dit un a perdu.",
+                "turn": "Répondez aux questions des autres joueurs sans utiliser 'oui' ou 'non'. Par exemple, à la question 'Tu aimes le chocolat ?', répondez 'J'adore ça !' plutôt que 'Oui'.",
+                "scoreCounter": false
+            }
+        ]
       }
     ]
 }

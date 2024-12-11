@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/player_model.dart';
-import 'darts_result_page.dart';
+import 'result_page.dart';
 import 'dart:math';
 
 // Énumération des catégories de score
@@ -141,7 +141,7 @@ class _YamsScorePageState extends State<YamsScorePage> {
 
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(
-        builder: (context) => DartsResultPage(
+        builder: (context) => ResultPage(
           players: widget.players,
           scores: finalScores,
           winner: winnerIndex,

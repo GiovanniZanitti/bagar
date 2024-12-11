@@ -13,7 +13,11 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Jeux par catégories',
-      theme: ThemeData(primarySwatch: Colors.blue, fontFamily: 'ConcertOne'),
+      theme: ThemeData(
+        primarySwatch: Colors.blue, 
+        fontFamily: 'ConcertOne',
+        scaffoldBackgroundColor: Colors.transparent,
+      ),
       home: const CategoryGridPage(),
     );
   }

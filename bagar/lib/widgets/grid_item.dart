@@ -4,11 +4,13 @@ class GridItem extends StatelessWidget {
   final String title;
   final String image;
   final VoidCallback onTap;
+  final Color primaryColor;
 
   const GridItem({
     required this.title,
     required this.image,
     required this.onTap,
+    required this.primaryColor,
     super.key,
   });
 
@@ -18,9 +20,23 @@ class GridItem extends StatelessWidget {
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.blue.shade100,
-          border: Border.all(color: Colors.blue, width: 2),
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              primaryColor,
+              primaryColor.withOpacity(0.7),
+            ],
+          ),
           borderRadius: BorderRadius.circular(8),
+          boxShadow: [
+            BoxShadow(
+              color: primaryColor.withOpacity(0.3),
+              spreadRadius: 1,
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
         alignment: Alignment.center,
         child: Column(
@@ -32,6 +48,7 @@ class GridItem extends StatelessWidget {
               style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
+                color: Colors.white,
               ),
             ),
             const SizedBox(height: 8),
